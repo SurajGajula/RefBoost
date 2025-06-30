@@ -259,32 +259,28 @@
         }
 
         function loadActivityFeed() {
-            const activities = JSON.parse(localStorage.getItem('referrerActivities') || JSON.stringify([
-                {
-                    type: 'referral',
-                    message: 'You earned $10 for referring John Doe',
-                    date: new Date().toISOString(),
-                    amount: 10
-                },
-                {
-                    type: 'campaign_joined',
-                    message: 'You joined the "Summer Sale" campaign',
-                    date: new Date(Date.now() - 86400000).toISOString(),
-                    campaign: 'Summer Sale'
-                }
-            ]));
+            const activities = JSON.parse(localStorage.getItem('referrerActivities') || JSON.stringify([]));
 
             const activityFeed = document.getElementById('activityFeed');
             if (activityFeed) {
-                activityFeed.innerHTML = activities.map(activity => `
-                    <div class="activity-item">
-                        <div class="activity-icon">${activity.type === 'referral' ? '💰' : '🎯'}</div>
-                        <div class="activity-content">
-                            <p>${activity.message}</p>
-                            <small>${new Date(activity.date).toLocaleDateString()}</small>
+                if (activities.length > 0) {
+                    activityFeed.innerHTML = activities.map(activity => `
+                        <div class="activity-item">
+                            <div class="activity-icon">${activity.type === 'referral' ? '💰' : '🎯'}</div>
+                            <div class="activity-content">
+                                <p>${activity.message}</p>
+                                <small>${new Date(activity.date).toLocaleDateString()}</small>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                } else {
+                    activityFeed.innerHTML = `
+                        <div style="text-align: center; color: var(--text-light); padding: 3rem;">
+                            <h3>No Recent Activity</h3>
+                            <p>Your activity will appear here as you join campaigns and earn referrals</p>
+                        </div>
+                    `;
+                }
             }
         }
 
