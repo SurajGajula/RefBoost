@@ -748,7 +748,7 @@ async function deleteCampaign(campaignId: string, campaignName: string): Promise
 
     try {
         const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/deletecampaign', {
-            method: 'DELETE',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: user.email, campaignId: campaignId })
         });

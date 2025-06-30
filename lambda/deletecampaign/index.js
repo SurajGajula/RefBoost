@@ -17,10 +17,12 @@ async function streamToString(stream) {
 }
 
 exports.handler = async (event) => {
+  // Comprehensive CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token',
+    'Access-Control-Allow-Methods': 'DELETE, POST, GET, OPTIONS',
+    'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json'
   };
 
@@ -29,79 +31,87 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({})
+      body: JSON.stringify({ message: 'CORS preflight response' })
     };
   }
 
-  const { username, campaignId } = event.body ? JSON.parse(event.body) : event;
-  
-  if (!username || !campaignId) {
-    return { 
-      statusCode: 400, 
-      headers,
-      body: JSON.stringify({ message: 'Missing username or campaignId' })
-    };
-  }
-  
-  let campaigns = {};
   try {
-    const getRes = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: CAMPAIGNS_KEY }));
-    const fileData = await streamToString(getRes.Body);
-    campaigns = JSON.parse(fileData);
-  } catch (err) {
-    if (err.name === 'NoSuchKey') {
+    const { username, campaignId } = event.body ? JSON.parse(event.body) : event;
+    
+    if (!username || !campaignId) {
+      return { 
+        statusCode: 400, 
+        headers,
+        body: JSON.stringify({ message: 'Missing username or campaignId' })
+      };
+    }
+    
+    let campaigns = {};
+    try {
+      const getRes = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: CAMPAIGNS_KEY }));
+      const fileData = await streamToString(getRes.Body);
+      campaigns = JSON.parse(fileData);
+    } catch (err) {
+      if (err.name === 'NoSuchKey') {
+        return { 
+          statusCode: 404, 
+          headers,
+          body: JSON.stringify({ message: 'No campaigns found' })
+        };
+      }
+      return { 
+        statusCode: 500, 
+        headers,
+        body: JSON.stringify({ message: 'Error loading campaigns: ' + err.message })
+      };
+    }
+    
+    // Check if user has campaigns
+    if (!campaigns[username] || !Array.isArray(campaigns[username])) {
       return { 
         statusCode: 404, 
         headers,
-        body: JSON.stringify({ message: 'No campaigns found' })
+        body: JSON.stringify({ message: 'No campaigns found for this user' })
       };
     }
-    return { 
-      statusCode: 500, 
+    
+    // Find and remove the campaign
+    const initialLength = campaigns[username].length;
+    campaigns[username] = campaigns[username].filter(campaign => campaign.id !== campaignId);
+    
+    // Check if campaign was found and deleted
+    if (campaigns[username].length === initialLength) {
+      return { 
+        statusCode: 404, 
+        headers,
+        body: JSON.stringify({ message: 'Campaign not found or not owned by this user' })
+      };
+    }
+    
+    try {
+      await s3.send(new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: CAMPAIGNS_KEY,
+        Body: JSON.stringify(campaigns, null, 2),
+        ContentType: 'application/json',
+      }));
+      return { 
+        statusCode: 200, 
+        headers,
+        body: JSON.stringify({ message: 'Campaign deleted successfully' })
+      };
+    } catch (err) {
+      return { 
+        statusCode: 500, 
+        headers,
+        body: JSON.stringify({ message: 'Error deleting campaign: ' + err.message })
+      };
+    }
+  } catch (error) {
+    return {
+      statusCode: 500,
       headers,
-      body: JSON.stringify({ message: 'Error loading campaigns: ' + err.message })
-    };
-  }
-  
-  // Check if user has campaigns
-  if (!campaigns[username] || !Array.isArray(campaigns[username])) {
-    return { 
-      statusCode: 404, 
-      headers,
-      body: JSON.stringify({ message: 'No campaigns found for this user' })
-    };
-  }
-  
-  // Find and remove the campaign
-  const initialLength = campaigns[username].length;
-  campaigns[username] = campaigns[username].filter(campaign => campaign.id !== campaignId);
-  
-  // Check if campaign was found and deleted
-  if (campaigns[username].length === initialLength) {
-    return { 
-      statusCode: 404, 
-      headers,
-      body: JSON.stringify({ message: 'Campaign not found or not owned by this user' })
-    };
-  }
-  
-  try {
-    await s3.send(new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: CAMPAIGNS_KEY,
-      Body: JSON.stringify(campaigns, null, 2),
-      ContentType: 'application/json',
-    }));
-    return { 
-      statusCode: 200, 
-      headers,
-      body: JSON.stringify({ message: 'Campaign deleted successfully' })
-    };
-  } catch (err) {
-    return { 
-      statusCode: 500, 
-      headers,
-      body: JSON.stringify({ message: 'Error deleting campaign: ' + err.message })
+      body: JSON.stringify({ message: 'Internal server error: ' + error.message })
     };
   }
 }; 
