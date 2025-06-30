@@ -656,9 +656,16 @@
                 return;
             }
 
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.email) {
+                alert('Please log in to leave campaigns');
+                return;
+            }
+
             try {
                 // Remove from joined campaigns
                 const joinedCampaigns = JSON.parse(localStorage.getItem('joinedCampaigns') || '[]');
+                const campaignToLeave = joinedCampaigns.find(campaign => campaign.campaignId === campaignId);
                 const updatedCampaigns = joinedCampaigns.filter(campaign => campaign.campaignId !== campaignId);
                 
                 localStorage.setItem('joinedCampaigns', JSON.stringify(updatedCampaigns));
@@ -667,6 +674,27 @@
                 const stats = JSON.parse(localStorage.getItem('referrerStats') || '{}');
                 stats.activeCampaigns = updatedCampaigns.length;
                 localStorage.setItem('referrerStats', JSON.stringify(stats));
+                
+                // Also delete the referral code from the database
+                if (campaignToLeave && campaignToLeave.referralCode) {
+                    fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/deletecode', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            username: user.email, 
+                            campaignId: campaignId,
+                            referralCode: campaignToLeave.referralCode
+                        })
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log('Referral code deleted from database successfully');
+                        } else {
+                            console.error('Failed to delete referral code from database');
+                        }
+                    }).catch(error => {
+                        console.error('Error deleting referral code from database:', error);
+                    });
+                }
                 
                 // Show success message
                 alert(`Successfully left campaign: ${campaignName}`);
