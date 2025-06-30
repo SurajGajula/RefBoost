@@ -552,6 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="campaign-actions" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                     <button class="btn btn-secondary" onclick="copyReferralLink('${campaign.referralLink}')">Copy Referral Link</button>
                     <a href="${campaign.referralLink}" target="_blank" class="btn btn-primary">Visit Signup Page</a>
+                    <button class="btn btn-danger" onclick="deleteCampaign('${campaign.id}', '${campaign.name}')" style="background: #ff4757; border: 1px solid #ff3742;">Delete Campaign</button>
                 </div>
                 <div class="campaign-referral-link" style="
                     margin-top: 1rem;
@@ -570,6 +571,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+    }
+    // Delete campaign function for owners
+    function deleteCampaign(campaignId, campaignName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!confirm(`Are you sure you want to delete the campaign "${campaignName}"?\n\nThis action cannot be undone and will remove all associated data.`)) {
+                return;
+            }
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.email) {
+                alert('Please log in to delete campaigns');
+                return;
+            }
+            try {
+                // For now, we'll need to implement a delete API endpoint
+                // Since there's no delete endpoint yet, we'll show a placeholder
+                alert(`Delete functionality for "${campaignName}" will be implemented when the delete API endpoint is created.\n\nCampaign ID: ${campaignId}`);
+                // TODO: Implement actual deletion when API is ready
+                // const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/deletecampaign', {
+                //     method: 'DELETE',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ username: user.email, campaignId: campaignId })
+                // });
+                // if (response.ok) {
+                //     alert(`Campaign "${campaignName}" deleted successfully!`);
+                //     await initCampaigns(); // Reload campaigns
+                // } else {
+                //     const errorData = await response.json();
+                //     alert('Failed to delete campaign: ' + (errorData.message || 'Unknown error'));
+                // }
+            }
+            catch (error) {
+                console.error('Error deleting campaign:', error);
+                alert('Error deleting campaign. Please try again.');
+            }
+        });
     }
     // Initialize campaigns page
     function initCampaigns() {
@@ -698,6 +734,43 @@ function copyReferralLink(link) {
         alert('Referral link copied to clipboard!');
     });
 }
+// Global function to delete campaign (for owners)
+function deleteCampaign(campaignId, campaignName) {
+    if (!confirm(`Are you sure you want to delete the campaign "${campaignName}"?\n\nThis action cannot be undone and will remove all associated data.`)) {
+        return;
+    }
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.email) {
+        alert('Please log in to delete campaigns');
+        return;
+    }
+    // For now, we'll need to implement a delete API endpoint
+    // Since there's no delete endpoint yet, we'll show a placeholder
+    alert(`Delete functionality for "${campaignName}" will be implemented when the delete API endpoint is created.\n\nCampaign ID: ${campaignId}`);
+    // TODO: Implement actual deletion when API is ready
+    // Example of what the implementation would look like:
+    /*
+    try {
+        const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/deletecampaign', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user.email, campaignId: campaignId })
+        });
+        
+        if (response.ok) {
+            alert(`Campaign "${campaignName}" deleted successfully!`);
+            // Reload campaigns page
+            window.location.reload();
+        } else {
+            const errorData = await response.json();
+            alert('Failed to delete campaign: ' + (errorData.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error deleting campaign:', error);
+        alert('Error deleting campaign. Please try again.');
+    }
+    */
+}
 // Pricing toggle functionality
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButtons = document.querySelectorAll('.toggle-btn');
@@ -818,3 +891,4 @@ function viewCampaignDetails(campaignId) {
 window.joinCampaign = joinCampaign;
 window.viewCampaignDetails = viewCampaignDetails;
 window.loadAllActiveCampaigns = loadAllActiveCampaigns;
+window.deleteCampaign = deleteCampaign;
