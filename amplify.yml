@@ -10,6 +10,10 @@ frontend:
         - npx tsc
         - echo "Copying compiled JavaScript..."
         - cp dist/app.js .
+        - echo "Copying HTML files from src/ to root..."
+        - cp src/*.html .
+        - echo "Copying CSS files from src/ to root..."
+        - cp src/*.css .
         - echo "Build complete"
   artifacts:
     baseDirectory: .
