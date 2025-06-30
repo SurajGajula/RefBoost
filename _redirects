@@ -1,6 +1,6 @@
 # Redirect URLs with trailing slashes to correct HTML files
 /campaigns/ /campaigns 301
-/home/ /homel 301
+/home/ /home 301
 /signup/ /signup 301
 /track/ /track 301
 /referrer-dashboard/ /referrer-dashboard 301
