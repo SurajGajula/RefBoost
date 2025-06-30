@@ -1,9 +1,32 @@
-# Redirect URLs with trailing slashes to correct HTML files
-/campaigns/ /campaigns 301
-/home/ /home 301
-/signup/ /signup 301
-/track/ /track 301
-/referrer-dashboard/ /referrer-dashboard 301
-
-# Default fallback for any other routes
-/* /index.html 200 
+[
+  {
+    "source": "/campaigns/",
+    "status": "301",
+    "target": "/campaigns"
+  },
+  {
+    "source": "/home/",
+    "status": "301", 
+    "target": "/home"
+  },
+  {
+    "source": "/signup/",
+    "status": "301",
+    "target": "/signup"
+  },
+  {
+    "source": "/track/",
+    "status": "301",
+    "target": "/track"
+  },
+  {
+    "source": "/referrer-dashboard/",
+    "status": "301",
+    "target": "/referrer-dashboard"
+  },
+  {
+    "source": "/<*>",
+    "status": "404-200",
+    "target": "/index.html"
+  }
+] 
