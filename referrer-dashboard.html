@@ -32,7 +32,7 @@
             </div>
             <div class="hero-stats">
                 <div class="stat-card">
-                    <div class="stat-number" id="totalEarnings">$0</div>
+                    <div class="stat-number">Coming Soon</div>
                     <div class="stat-label">Total Earnings</div>
                 </div>
                 <div class="stat-card">
@@ -67,8 +67,8 @@
                 <div class="action-card">
                     <div class="action-icon">💰</div>
                     <h3>Withdraw Earnings</h3>
-                    <p>Cash out your earned rewards</p>
-                    <button class="btn btn-primary" onclick="showWithdrawModal()">Withdraw</button>
+                    <p>Earnings tracking coming soon</p>
+                    <button class="btn btn-secondary" disabled>Coming Soon</button>
                 </div>
             </div>
         </div>
@@ -232,7 +232,6 @@
                 // Reset to clean state if parsing fails
                 localStorage.setItem('joinedCampaigns', JSON.stringify([]));
                 localStorage.setItem('referrerStats', JSON.stringify({
-                    totalEarnings: 0,
                     totalReferrals: 0,
                     activeCampaigns: 0
                 }));
@@ -242,15 +241,12 @@
         function loadDashboardData() {
             // Load user stats
             const stats = JSON.parse(localStorage.getItem('referrerStats') || JSON.stringify({
-                totalEarnings: 0,
                 totalReferrals: 0,
                 activeCampaigns: 0
             }));
 
-            document.getElementById('totalEarnings').textContent = `$${stats.totalEarnings}`;
             document.getElementById('totalReferrals').textContent = stats.totalReferrals;
             document.getElementById('activeCampaigns').textContent = stats.activeCampaigns;
-            document.getElementById('availableBalance').textContent = `$${stats.totalEarnings}`;
 
             // Load activity feed
             loadActivityFeed();
