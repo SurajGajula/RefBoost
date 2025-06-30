@@ -680,7 +680,7 @@
                 // Also delete the referral code from the database
                 if (campaignToLeave && campaignToLeave.referralCode) {
                     fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/deletecode', {
-                        method: 'DELETE',
+                        method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             username: user.email, 

@@ -17,10 +17,12 @@ async function streamToString(stream) {
 }
 
 exports.handler = async (event) => {
+  // Comprehensive CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Credentials': true,
     'Content-Type': 'application/json'
   };
 
@@ -29,91 +31,109 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({})
+      body: JSON.stringify({ message: 'CORS preflight check passed' })
     };
   }
 
-  const { username, campaignId, referralCode } = event.body ? JSON.parse(event.body) : event;
-  
-  if (!username || (!campaignId && !referralCode)) {
-    return { 
-      statusCode: 400, 
-      headers,
-      body: JSON.stringify({ message: 'Missing username and either campaignId or referralCode' })
-    };
-  }
-  
-  let codes = {};
   try {
-    const getRes = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: CODES_KEY }));
-    const fileData = await streamToString(getRes.Body);
-    codes = JSON.parse(fileData);
-  } catch (err) {
-    if (err.name === 'NoSuchKey') {
+    // Parse the request body
+    const body = JSON.parse(event.body);
+    const { username, campaignId, referralCode } = body;
+    
+    if (!username || (!campaignId && !referralCode)) {
+      return { 
+        statusCode: 400, 
+        headers,
+        body: JSON.stringify({ message: 'Missing username and either campaignId or referralCode' })
+      };
+    }
+    
+    console.log('Processing code deletion:', { username, campaignId, referralCode });
+    
+    let codes = {};
+    try {
+      const getRes = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: CODES_KEY }));
+      const fileData = await streamToString(getRes.Body);
+      codes = JSON.parse(fileData);
+    } catch (err) {
+      if (err.name === 'NoSuchKey') {
+        return { 
+          statusCode: 404, 
+          headers,
+          body: JSON.stringify({ message: 'No codes found' })
+        };
+      }
+      console.error('Error loading codes:', err);
+      return { 
+        statusCode: 500, 
+        headers,
+        body: JSON.stringify({ message: 'Error loading codes: ' + err.message })
+      };
+    }
+    
+    // Check if user has codes
+    if (!codes[username] || !Array.isArray(codes[username])) {
       return { 
         statusCode: 404, 
         headers,
-        body: JSON.stringify({ message: 'No codes found' })
+        body: JSON.stringify({ message: 'No codes found for this user' })
       };
     }
-    return { 
-      statusCode: 500, 
-      headers,
-      body: JSON.stringify({ message: 'Error loading codes: ' + err.message })
-    };
-  }
-  
-  // Check if user has codes
-  if (!codes[username] || !Array.isArray(codes[username])) {
-    return { 
-      statusCode: 404, 
-      headers,
-      body: JSON.stringify({ message: 'No codes found for this user' })
-    };
-  }
-  
-  // Find and remove the code by either campaignId or referralCode
-  const initialLength = codes[username].length;
-  codes[username] = codes[username].filter(code => {
-    if (referralCode) {
-      return code.code !== referralCode;
-    } else if (campaignId) {
-      return code.campaignId !== campaignId;
-    }
-    return true;
-  });
-  
-  // Check if any codes were found and deleted
-  if (codes[username].length === initialLength) {
-    return { 
-      statusCode: 404, 
-      headers,
-      body: JSON.stringify({ message: 'Code not found or not owned by this user' })
-    };
-  }
-  
-  try {
-    await s3.send(new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: CODES_KEY,
-      Body: JSON.stringify(codes, null, 2),
-      ContentType: 'application/json',
-    }));
     
-    const deletedCount = initialLength - codes[username].length;
-    return { 
-      statusCode: 200, 
+    // Find and remove the code by either campaignId or referralCode
+    const initialLength = codes[username].length;
+    codes[username] = codes[username].filter(code => {
+      if (referralCode) {
+        return code.code !== referralCode;
+      } else if (campaignId) {
+        return code.campaignId !== campaignId;
+      }
+      return true;
+    });
+    
+    // Check if any codes were found and deleted
+    if (codes[username].length === initialLength) {
+      return { 
+        statusCode: 404, 
+        headers,
+        body: JSON.stringify({ message: 'Code not found or not owned by this user' })
+      };
+    }
+    
+    try {
+      await s3.send(new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: CODES_KEY,
+        Body: JSON.stringify(codes, null, 2),
+        ContentType: 'application/json',
+      }));
+      
+      const deletedCount = initialLength - codes[username].length;
+      console.log('Successfully deleted', deletedCount, 'referral code(s) for user:', username);
+      
+      return { 
+        statusCode: 200, 
+        headers,
+        body: JSON.stringify({ 
+          message: `Successfully deleted ${deletedCount} referral code(s)`,
+          deletedCount 
+        })
+      };
+    } catch (err) {
+      console.error('Error saving updated codes:', err);
+      return { 
+        statusCode: 500, 
+        headers,
+        body: JSON.stringify({ message: 'Error deleting code: ' + err.message })
+      };
+    }
+    
+  } catch (error) {
+    console.error('Error processing code deletion:', error);
+    return {
+      statusCode: 500,
       headers,
-      body: JSON.stringify({ 
-        message: `Successfully deleted ${deletedCount} referral code(s)`,
-        deletedCount 
-      })
-    };
-  } catch (err) {
-    return { 
-      statusCode: 500, 
-      headers,
-      body: JSON.stringify({ message: 'Error deleting code: ' + err.message })
+      body: JSON.stringify({ message: 'Internal server error: ' + error.message })
     };
   }
 }; 
