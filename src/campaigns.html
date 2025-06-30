@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Campaigns - RefBoost</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">RefBoost</a>
+            <div class="nav-links">
+                <a href="home.html" class="nav-link">Dashboard</a>
+                <a href="campaigns.html" class="nav-link active">My Campaigns</a>
+                <a href="#analytics" class="nav-link">Analytics</a>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Campaigns Section -->
+    <section class="campaigns">
+        <div class="container">
+            <div class="campaigns-header">
+                <h1>My Campaigns</h1>
+                <p>Manage your referral campaigns and track performance</p>
+                <button id="createCampaignBtn" class="btn btn-primary">Create New Campaign</button>
+            </div>
+            
+            <div class="campaigns-content">
+                <!-- Owned Campaigns -->
+                <div id="ownedCampaigns" class="campaigns-grid">
+                    <!-- Campaigns will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Create Campaign Modal -->
+    <div id="createCampaignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Campaign</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="createCampaignForm" class="campaign-form">
+                <div class="form-group">
+                    <label for="campaign-name">Campaign Name</label>
+                    <input type="text" id="campaign-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="campaign-description">Description</label>
+                    <textarea id="campaign-description" name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="campaign-reward">Reward</label>
+                    <input type="text" id="campaign-reward" name="reward" placeholder="e.g., $10 per referral" required>
+                </div>
+                <div class="form-group">
+                    <label for="campaign-referral-link">Referral Link</label>
+                    <input type="text" id="campaign-referral-link" name="referralLink" placeholder="yoursite.com/signup?ref=USER_ID" required>
+                    <small style="color: var(--text-light); font-size: 0.875rem;">This is where referees will be directed to sign up</small>
+                </div>
+                <div class="form-group">
+                    <label for="campaign-end-date">End Date</label>
+                    <input type="date" id="campaign-end-date" name="endDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create Campaign</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>RefBoost</h3>
+                    <p>Supercharge your referral program with our easy-to-integrate solution.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#docs">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#security">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 RefBoost. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="social-icon">𝕏</i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="social-icon">in</i></a>
+                    <a href="#" aria-label="GitHub"><i class="social-icon">gh</i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="dist/app.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var endDateInput = document.getElementById('campaign-end-date');
+        if (endDateInput && !endDateInput.value) {
+          var today = new Date();
+          var yyyy = today.getFullYear();
+          var mm = String(today.getMonth() + 1).padStart(2, '0');
+          var dd = String(today.getDate()).padStart(2, '0');
+          endDateInput.value = yyyy + '-' + mm + '-' + dd;
+        }
+      });
+    </script>
+</body>
+</html>
