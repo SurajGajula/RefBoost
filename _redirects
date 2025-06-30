@@ -1,2 +1,9 @@
-# Redirects for AWS Amplify
-/*    /index.html   200 
+# Static files should be served directly
+/styles.css   /styles.css   200
+/app.js      /app.js       200
+*.html       /              200
+*.css        /              200
+*.js         /              200
+
+# Handle SPA routing - only redirect if file doesn't exist
+/*    /index.html   404 
