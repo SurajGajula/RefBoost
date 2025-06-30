@@ -877,26 +877,111 @@ async function loadAllActiveCampaigns(): Promise<any[]> {
 }
 
 // Function to join a campaign (for affiliates)
-function joinCampaign(campaignId: string, campaignName: string): void {
-    // Add user to campaign
-    const joinedCampaigns = JSON.parse(localStorage.getItem('joinedCampaigns') || '[]');
-    if (!joinedCampaigns.includes(campaignId)) {
-        joinedCampaigns.push(campaignId);
-        localStorage.setItem('joinedCampaigns', JSON.stringify(joinedCampaigns));
-        
-        // Update stats
-        const stats = JSON.parse(localStorage.getItem('referrerStats') || '{}');
-        stats.activeCampaigns = joinedCampaigns.length;
-        localStorage.setItem('referrerStats', JSON.stringify(stats));
-        
-        alert(`Successfully joined campaign: ${campaignName}`);
-        // Reload dashboard data if on referrer dashboard
-        if (window.location.pathname.includes('referrer-dashboard.html')) {
-            (window as any).loadDashboardData?.();
-        }
-    } else {
-        alert('You are already part of this campaign!');
+async function joinCampaign(campaignId: string, campaignName: string): Promise<void> {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.email) {
+        alert('Please log in to join campaigns');
+        return;
     }
+
+    // Check if already joined locally first (quick check)
+    const joinedCampaigns = JSON.parse(localStorage.getItem('joinedCampaigns') || '[]');
+    if (joinedCampaigns.find((c: any) => c.campaignId === campaignId)) {
+        alert('You are already part of this campaign!');
+        return;
+    }
+
+    try {
+        // Generate unique referral code
+        const referralCode = generateReferralCode();
+        
+        // Get the original campaign link from all campaigns
+        let allCampaigns: any[] = [];
+        try {
+            allCampaigns = await loadAllActiveCampaigns();
+            // Ensure we have an array
+            if (!Array.isArray(allCampaigns)) {
+                allCampaigns = [];
+            }
+        } catch (error) {
+            console.error('Error loading campaigns:', error);
+            allCampaigns = [];
+        }
+        
+        const campaign = allCampaigns.find((c: any) => c.id === campaignId);
+        
+        if (!campaign) {
+            alert('Campaign not found. Please refresh the page and try again.');
+            return;
+        }
+
+        console.log('Joining campaign with data:', {
+            username: user.email,
+            campaignId,
+            campaignName,
+            referralCode,
+            originalLink: campaign.referralLink
+        });
+
+        // Use the new joincampaign API that updates both affiliate and campaign owner data
+        const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/joincampaign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                username: user.email,
+                campaignId: campaignId,
+                campaignName: campaignName,
+                referralCode: referralCode,
+                originalLink: campaign.referralLink
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log('Successfully joined campaign:', data);
+            
+            // Update local storage for immediate UI feedback
+            const updatedJoinedCampaigns = [...joinedCampaigns, {
+                campaignId: campaignId,
+                campaignName: campaignName,
+                referralCode: referralCode,
+                referralLink: data.referralLink,
+                joinedDate: new Date().toISOString()
+            }];
+            localStorage.setItem('joinedCampaigns', JSON.stringify(updatedJoinedCampaigns));
+            
+            // Update stats
+            const stats = JSON.parse(localStorage.getItem('referrerStats') || '{}');
+            stats.activeCampaigns = updatedJoinedCampaigns.length;
+            localStorage.setItem('referrerStats', JSON.stringify(stats));
+            
+            // Show success message with referral link
+            alert(`Successfully joined campaign: ${campaignName}\n\nYour referral link: ${data.referralLink}\n\nShare this link to earn rewards!\n\nNote: The campaign owner's participant count has been updated.`);
+            
+            // Reload dashboard data if on referrer dashboard
+            if (window.location.pathname.includes('referrer-dashboard.html')) {
+                (window as any).loadDashboardData?.();
+            }
+        } else {
+            console.error('Failed to join campaign:', data);
+            alert('Failed to join campaign: ' + (data.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error joining campaign:', error);
+        alert('Error joining campaign. Please try again.');
+    }
+}
+
+// Helper function to generate referral codes
+function generateReferralCode(): string {
+    // Generate a unique 8-character alphanumeric code
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 // Function to view campaign details
