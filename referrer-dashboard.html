@@ -433,20 +433,51 @@
                     campaigns = data;
                 }
                 
+                console.log('Raw campaigns from API:', campaigns);
+                console.log('Number of campaigns received:', campaigns.length);
+                
+                // Debug each campaign's properties
+                campaigns.forEach((campaign, index) => {
+                    console.log(`Campaign ${index}:`, {
+                        id: campaign.id,
+                        name: campaign.name,
+                        status: campaign.status,
+                        endDate: campaign.endDate,
+                        owner: campaign.owner
+                    });
+                });
+                
                 // Filter out expired campaigns by comparing with current date
                 const currentDate = new Date();
+                console.log('Current date for comparison:', currentDate);
+                
                 const activeCampaigns = campaigns.filter(campaign => {
+                    console.log(`Checking campaign "${campaign.name}":`, {
+                        status: campaign.status,
+                        statusCheck: campaign.status === 'active',
+                        endDate: campaign.endDate,
+                        endDateParsed: campaign.endDate ? new Date(campaign.endDate) : null,
+                        isExpired: campaign.endDate ? new Date(campaign.endDate) <= currentDate : false
+                    });
+                    
                     // Check if campaign status is active
-                    if (campaign.status !== 'active') return false;
+                    if (campaign.status !== 'active') {
+                        console.log(`Campaign "${campaign.name}" filtered out: status is "${campaign.status}", not "active"`);
+                        return false;
+                    }
                     
                     // Check if campaign has an end date and if it's still valid
                     if (campaign.endDate) {
                         const endDate = new Date(campaign.endDate);
-                        // Only include campaigns that haven't expired
-                        return endDate > currentDate;
+                        const isValid = endDate > currentDate;
+                        if (!isValid) {
+                            console.log(`Campaign "${campaign.name}" filtered out: expired (${endDate} <= ${currentDate})`);
+                        }
+                        return isValid;
                     }
                     
                     // If no end date is specified, consider it active
+                    console.log(`Campaign "${campaign.name}" passed all filters`);
                     return true;
                 });
                 
