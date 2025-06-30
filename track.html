@@ -87,6 +87,8 @@
                 return;
             }
 
+            console.log('Processing referral code:', referralCode);
+
             try {
                 // Load all referral codes to find the matching one
                 const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadallcodes', {
@@ -97,9 +99,11 @@
 
                 let allCodes = [];
                 const data = await response.json();
+                console.log('LoadAllCodes response:', data);
                 
                 if (response.ok && data.statusCode === 200) {
                     const codesData = JSON.parse(data.body);
+                    console.log('Parsed codes data:', codesData);
                     // Flatten all codes from all users
                     Object.keys(codesData).forEach(username => {
                         if (Array.isArray(codesData[username])) {
@@ -108,10 +112,24 @@
                     });
                 } else if (Array.isArray(data)) {
                     allCodes = data;
+                } else {
+                    // Handle case where data is directly the codes object
+                    console.log('Handling direct data object:', data);
+                    if (typeof data === 'object' && data !== null) {
+                        Object.keys(data).forEach(username => {
+                            if (Array.isArray(data[username])) {
+                                allCodes = allCodes.concat(data[username]);
+                            }
+                        });
+                    }
                 }
+
+                console.log('All flattened codes:', allCodes);
+                console.log('Looking for code:', referralCode);
 
                 // Find the matching referral code
                 const referralData = allCodes.find(code => code.code === referralCode);
+                console.log('Found referral data:', referralData);
                 
                 if (!referralData) {
                     showError('Invalid or expired referral code.');
@@ -124,6 +142,8 @@
                     clicks: (referralData.clicks || 0) + 1,
                     lastClicked: new Date().toISOString()
                 };
+
+                console.log('Updating referral data:', updatedReferralData);
 
                 // Update the referral code with new click count
                 const updateResponse = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/storecodes', {
@@ -143,6 +163,8 @@
 
                 // Redirect to the original campaign link
                 const originalLink = referralData.originalLink;
+                console.log('Redirecting to:', originalLink);
+                
                 if (originalLink) {
                     // Add a small delay to ensure tracking is processed
                     setTimeout(() => {

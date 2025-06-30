@@ -456,19 +456,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load campaigns data
     async function loadCampaigns() {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!user.email) return [];
+        console.log('loadCampaigns: Current user:', user);
+        if (!user.email) {
+            console.log('loadCampaigns: No user email found');
+            return [];
+        }
         try {
+            console.log('loadCampaigns: Fetching campaigns for user:', user.email);
             const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadcampaigns', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: user.email })
             });
             const data = await response.json();
+            console.log('loadCampaigns: Response data:', data);
+            
             if (response.ok && data.statusCode === 200) {
-                return JSON.parse(data.body);
+                const campaigns = JSON.parse(data.body);
+                console.log('loadCampaigns: Parsed campaigns:', campaigns);
+                return campaigns;
             } else if (Array.isArray(data)) {
+                console.log('loadCampaigns: Direct array response:', data);
                 return data;
             } else {
+                console.log('loadCampaigns: No valid data found, returning empty array');
                 return [];
             }
         } catch (error) {
@@ -698,7 +709,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize campaigns if on campaigns page
-    if (window.location.pathname.includes('campaigns.html')) {
+    if (window.location.pathname.includes('campaigns.html') || window.location.pathname.includes('/campaigns')) {
+        console.log('Detected campaigns page, initializing campaigns...');
+        console.log('Current pathname:', window.location.pathname);
         initCampaigns();
         // Make initCampaigns globally available for refreshing after deletions
         (window as any).initCampaigns = initCampaigns;
@@ -745,7 +758,7 @@ async function deleteCampaign(campaignId: string, campaignName: string): Promise
         if (response.ok) {
             alert(`Campaign "${campaignName}" deleted successfully!`);
             // Reload campaigns page if we're on the campaigns page
-            if (window.location.pathname.includes('campaigns.html')) {
+            if (window.location.pathname.includes('campaigns.html') || window.location.pathname.includes('/campaigns')) {
                 const initCampaigns = (window as any).initCampaigns;
                 if (typeof initCampaigns === 'function') {
                     await initCampaigns();
