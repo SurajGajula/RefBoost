@@ -1,2 +1,14 @@
-# Handle SPA routing - redirect non-existent routes to index.html
-/*    /index.html   404 
+# Serve specific HTML files for their routes
+/campaigns   /campaigns.html   200
+/home        /home.html        200
+/signup      /signup.html      200
+/referrer-dashboard  /referrer-dashboard.html  200
+/track       /track.html       200
+
+# Handle file extensions - serve the files directly
+*.html       /               200
+*.css        /               200  
+*.js         /               200
+
+# Fallback for any other routes
+/*           /index.html     404 
