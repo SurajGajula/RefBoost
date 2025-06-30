@@ -1,9 +1,9 @@
 # Redirect URLs with trailing slashes to correct HTML files
-/campaigns/ /campaigns.html 301
-/home/ /home.html 301
-/signup/ /signup.html 301
-/track/ /track.html 301
-/referrer-dashboard/ /referrer-dashboard.html 301
+/campaigns/ /campaigns 301
+/home/ /homel 301
+/signup/ /signup 301
+/track/ /track 301
+/referrer-dashboard/ /referrer-dashboard 301
 
 # Default fallback for any other routes
 /* /index.html 200 
