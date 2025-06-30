@@ -504,9 +504,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Render campaign card for owned campaigns
     function renderOwnedCampaignCard(campaign: any) {
+        // Safely handle missing referrals and totalSignups fields
+        const referrals = campaign.referrals || [];
+        const totalSignups = campaign.totalSignups || 0;
+        const participants = campaign.participants || [];
+        
         // Calculate total and completed referrals
-        const totalReferrals = campaign.referrals.reduce((sum: number, ref: any) => sum + ref.referees.length, 0);
-        const completedReferrals = campaign.referrals.reduce((sum: number, ref: any) => sum + ref.referees.filter((r: any) => r.status === 'completed').length, 0);
+        const totalReferrals = referrals.reduce((sum: number, ref: any) => sum + (ref.referees ? ref.referees.length : 0), 0);
+        const completedReferrals = referrals.reduce((sum: number, ref: any) => sum + (ref.referees ? ref.referees.filter((r: any) => r.status === 'completed').length : 0), 0);
 
         return `
             <div class="campaign-card" style="
@@ -556,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="campaign-detail">
                         <span class="campaign-detail-label">Total Signups</span>
-                        <span class="campaign-detail-value">${campaign.totalSignups}</span>
+                        <span class="campaign-detail-value">${totalSignups}</span>
                     </div>
                     <div class="campaign-detail">
                         <span class="campaign-detail-label">Total Referrals</span>
@@ -572,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="campaign-detail">
                         <span class="campaign-detail-label">Participants</span>
-                        <span class="campaign-detail-value">${campaign.participants.length}</span>
+                        <span class="campaign-detail-value">${participants.length}</span>
                     </div>
                 </div>
                 <div class="campaign-actions" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
@@ -823,10 +828,11 @@ async function loadCampaignsAfterLogin(userEmail: string) {
         // Filter campaigns owned by this user
         const ownedCampaigns = campaigns.filter((c: any) => c.owner === userEmail);
         
-        // Update stats based on actual campaigns
+        // Update stats based on actual campaigns - safely handle missing fields
         const totalCampaigns = ownedCampaigns.length;
         const totalReferrals = ownedCampaigns.reduce((sum: number, campaign: any) => {
-            return sum + (campaign.referrals ? campaign.referrals.reduce((refSum: number, ref: any) => refSum + ref.referees.length, 0) : 0);
+            const referrals = campaign.referrals || [];
+            return sum + referrals.reduce((refSum: number, ref: any) => refSum + (ref.referees ? ref.referees.length : 0), 0);
         }, 0);
         
         // Store updated stats for immediate display on dashboard

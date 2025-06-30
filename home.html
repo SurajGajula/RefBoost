@@ -173,10 +173,11 @@
                 // Filter campaigns owned by this user
                 const ownedCampaigns = campaigns.filter(c => c.owner === user.email);
                 
-                // Update stats based on actual campaigns
+                // Update stats based on actual campaigns - safely handle missing fields
                 const totalCampaigns = ownedCampaigns.length;
                 const totalReferrals = ownedCampaigns.reduce((sum, campaign) => {
-                    return sum + (campaign.referrals ? campaign.referrals.reduce((refSum, ref) => refSum + ref.referees.length, 0) : 0);
+                    const referrals = campaign.referrals || [];
+                    return sum + referrals.reduce((refSum, ref) => refSum + (ref.referees ? ref.referees.length : 0), 0);
                 }, 0);
                 
                 // Update display
@@ -193,7 +194,7 @@
                 document.getElementById('totalRevenue').textContent = `$${stats.totalRevenue}`;
                 
             } catch (error) {
-                console.error('Error loading campaigns:', error);
+                console.error('Error loading campaigns data:', error);
             }
         }
     </script>
