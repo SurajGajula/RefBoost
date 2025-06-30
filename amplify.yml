@@ -17,6 +17,7 @@ frontend:
       - '*.html'
       - '*.css'
       - '*.js'
+      - '_redirects'
     excludePaths:
       - node_modules/**/*
       - lambda/**/*
