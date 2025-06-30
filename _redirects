@@ -1,2 +1,10 @@
-# Fallback for SPA routing
+# Don't redirect requests for existing files
+/campaigns.html   /campaigns.html   200
+/home.html        /home.html        200  
+/signup.html      /signup.html      200
+/referrer-dashboard.html  /referrer-dashboard.html  200
+/track.html       /track.html       200
+/index.html       /index.html       200
+
+# Fallback for non-existent routes only
 /*    /index.html   404 
