@@ -8,6 +8,6 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
     },
-    "include": ["src/**/*", "lambda/dummy/*"],
+    "include": ["app.ts"],
     "exclude": ["node_modules"]
 } 
