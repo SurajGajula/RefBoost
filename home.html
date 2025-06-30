@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - RefBoost</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-logo">RefBoost</div>
+            <div class="nav-links">
+                <a href="home.html" class="nav-link active">Dashboard</a>
+                <a href="campaigns.html" class="nav-link">Campaigns</a>
+                <a href="#analytics" class="nav-link">Analytics</a>
+                <a href="#referrers" class="nav-link">Referrers</a>
+                <a href="#settings" class="nav-link">Settings</a>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Owner Dashboard</h1>
+                <p>Manage your referral campaigns and track performance</p>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCampaigns">0</div>
+                        <div class="stat-label">Active Campaigns</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalReferrals">0</div>
+                        <div class="stat-label">Total Referrals</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRevenue">$0</div>
+                        <div class="stat-label">Revenue Generated</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>Create Campaign</h3>
+                    <p>Start a new referral campaign for your product or service</p>
+                    <button class="btn btn-primary" onclick="window.location.href='campaigns.html'">Create Campaign</button>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-icon">📊</div>
+                    <h3>View Analytics</h3>
+                    <p>Track performance, conversions, and campaign metrics</p>
+                    <button class="btn btn-secondary">View Analytics</button>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-icon">👥</div>
+                    <h3>Manage Referrers</h3>
+                    <p>View and manage your active referrers</p>
+                    <button class="btn btn-secondary">Manage Referrers</button>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-icon">💰</div>
+                    <h3>Revenue Tracking</h3>
+                    <p>Monitor revenue generated from referrals</p>
+                    <button class="btn btn-secondary">View Revenue</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>RefBoost</h3>
+                    <p>Supercharge your referral program with our easy-to-integrate solution.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#docs">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#security">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 RefBoost. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="social-icon">𝕏</i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="social-icon">in</i></a>
+                    <a href="#" aria-label="GitHub"><i class="social-icon">gh</i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="dist/app.js"></script>
+    <script>
+        // Initialize business owner dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.email) {
+                window.location.href = 'signup.html';
+                return;
+            }
+            
+            // Load dashboard data directly - account type is handled by main auth flow
+            loadOwnerDashboardData();
+        });
+
+        function loadOwnerDashboardData() {
+            // Load owner stats
+            const stats = JSON.parse(localStorage.getItem('ownerStats') || JSON.stringify({
+                totalCampaigns: 0,
+                totalReferrals: 0,
+                totalRevenue: 0
+            }));
+
+            document.getElementById('totalCampaigns').textContent = stats.totalCampaigns;
+            document.getElementById('totalReferrals').textContent = stats.totalReferrals;
+            document.getElementById('totalRevenue').textContent = `$${stats.totalRevenue}`;
+            
+            // Load campaigns data to update stats
+            loadCampaignsData();
+        }
+        
+        async function loadCampaignsData() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.email) return;
+            
+            try {
+                const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadcampaigns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.email })
+                });
+                const data = await response.json();
+                let campaigns = [];
+                
+                if (response.ok && data.statusCode === 200) {
+                    campaigns = JSON.parse(data.body);
+                } else if (Array.isArray(data)) {
+                    campaigns = data;
+                }
+                
+                // Filter campaigns owned by this user
+                const ownedCampaigns = campaigns.filter(c => c.owner === user.email);
+                
+                // Update stats based on actual campaigns
+                const totalCampaigns = ownedCampaigns.length;
+                const totalReferrals = ownedCampaigns.reduce((sum, campaign) => {
+                    return sum + (campaign.referrals ? campaign.referrals.reduce((refSum, ref) => refSum + ref.referees.length, 0) : 0);
+                }, 0);
+                
+                // Update display
+                document.getElementById('totalCampaigns').textContent = totalCampaigns;
+                document.getElementById('totalReferrals').textContent = totalReferrals;
+                
+                // Store updated stats
+                const stats = {
+                    totalCampaigns,
+                    totalReferrals,
+                    totalRevenue: totalReferrals * 10 // Assuming $10 per referral for now
+                };
+                localStorage.setItem('ownerStats', JSON.stringify(stats));
+                document.getElementById('totalRevenue').textContent = `$${stats.totalRevenue}`;
+                
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+            }
+        }
+    </script>
+</body>
+</html> 

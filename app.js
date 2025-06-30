@@ -1,13 +1,3 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 // Navigation scroll effect
 const nav = document.querySelector('.nav');
 let lastScroll = 0;
@@ -31,14 +21,11 @@ window.addEventListener('scroll', () => {
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        const href = this.getAttribute('href');
-        if (href && href !== '#' && href.length > 1) {
-            const target = document.querySelector(href);
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth'
+            });
         }
     });
 });
@@ -225,54 +212,50 @@ function showAccountTypeModal() {
             this.style.transform = 'translateY(0)';
             this.style.boxShadow = 'none';
         });
-        option.addEventListener('click', function () {
-            return __awaiter(this, void 0, void 0, function* () {
-                const accountType = this.getAttribute('data-type');
-                if (accountType) {
-                    yield selectAccountType(accountType);
-                }
-            });
+        option.addEventListener('click', async function () {
+            const accountType = this.getAttribute('data-type');
+            if (accountType) {
+                await selectAccountType(accountType);
+            }
         });
     });
 }
-function selectAccountType(accountType) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!user.email)
-            return;
-        // Update user data with account type
-        user.accountType = accountType;
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.removeItem('isNewUser');
-        // Store account type mapping for this email (local backup)
-        const accountTypes = JSON.parse(localStorage.getItem('userAccountTypes') || '{}');
-        accountTypes[user.email] = accountType;
-        localStorage.setItem('userAccountTypes', JSON.stringify(accountTypes));
-        // Store account type in database via API
-        try {
-            const response = yield fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/storeaccounttype', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user.email, accountType })
-            });
-            if (!response.ok) {
-                console.error('Failed to store account type in database');
-            }
-            else {
-                console.log('Account type stored in database successfully');
-            }
+async function selectAccountType(accountType) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.email)
+        return;
+    // Update user data with account type
+    user.accountType = accountType;
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.removeItem('isNewUser');
+    // Store account type mapping for this email (local backup)
+    const accountTypes = JSON.parse(localStorage.getItem('userAccountTypes') || '{}');
+    accountTypes[user.email] = accountType;
+    localStorage.setItem('userAccountTypes', JSON.stringify(accountTypes));
+    // Store account type in database via API
+    try {
+        const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/storeaccounttype', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user.email, accountType })
+        });
+        if (!response.ok) {
+            console.error('Failed to store account type in database');
         }
-        catch (error) {
-            console.error('Error storing account type:', error);
+        else {
+            console.log('Account type stored in database successfully');
         }
-        // Remove the modal
-        const modal = document.getElementById('accountTypeModal');
-        if (modal) {
-            modal.remove();
-        }
-        // Redirect based on account type
-        redirectBasedOnAccountType(accountType);
-    });
+    }
+    catch (error) {
+        console.error('Error storing account type:', error);
+    }
+    // Remove the modal
+    const modal = document.getElementById('accountTypeModal');
+    if (modal) {
+        modal.remove();
+    }
+    // Redirect based on account type
+    redirectBasedOnAccountType(accountType);
 }
 // Redirect based on account type
 function redirectBasedOnAccountType(accountType) {
@@ -291,111 +274,109 @@ function redirectBasedOnAccountType(accountType) {
 document.addEventListener('DOMContentLoaded', () => {
     const signupForm = document.getElementById('signupForm');
     const loginForm = document.getElementById('loginForm');
-    function handleAuth(form, mode) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const formData = new FormData(form);
-            const email = formData.get('email');
-            const password = formData.get('password');
-            let endpoint = '';
-            if (mode === 'login') {
-                endpoint = 'https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/signin';
-            }
-            else if (mode === 'signup') {
-                endpoint = 'https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/signup';
+    async function handleAuth(form, mode) {
+        const formData = new FormData(form);
+        const email = formData.get('email');
+        const password = formData.get('password');
+        let endpoint = '';
+        if (mode === 'login') {
+            endpoint = 'https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/signin';
+        }
+        else if (mode === 'signup') {
+            endpoint = 'https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/signup';
+        }
+        else {
+            alert('Invalid mode');
+            return;
+        }
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: email, email, password })
+            });
+            const data = await response.json();
+            if (mode === 'signup') {
+                // For signup, check statusCode
+                if (response.ok && (data.statusCode === 200 || data.statusCode === 201)) {
+                    const userData = { email };
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    localStorage.setItem('isNewUser', 'true'); // Mark as new user
+                    showAccountTypeModal();
+                }
+                else {
+                    alert(data.message || 'Signup failed');
+                }
             }
             else {
-                alert('Invalid mode');
-                return;
-            }
-            try {
-                const response = yield fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: email, email, password })
-                });
-                const data = yield response.json();
-                if (mode === 'signup') {
-                    // For signup, check statusCode
-                    if (response.ok && (data.statusCode === 200 || data.statusCode === 201)) {
-                        const userData = { email };
+                // For login, check if we got user data back (successful login)
+                if (response.ok && data.username && data.email) {
+                    console.log('Login successful, server response:', data);
+                    // Try to get account type from loadaccounttype endpoint
+                    let accountType = null;
+                    try {
+                        const accountTypeResponse = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadaccounttype', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: data.email })
+                        });
+                        if (accountTypeResponse.ok) {
+                            const accountTypeData = await accountTypeResponse.json();
+                            accountType = accountTypeData.accountType;
+                            console.log('Account type loaded from database:', accountType);
+                        }
+                        else {
+                            console.log('No account type found in database');
+                        }
+                    }
+                    catch (error) {
+                        console.error('Error loading account type:', error);
+                    }
+                    // If not found in database, check stored account types by email as fallback
+                    if (!accountType) {
+                        const accountTypes = JSON.parse(localStorage.getItem('userAccountTypes') || '{}');
+                        accountType = accountTypes[data.email];
+                        console.log('Account type from stored mapping:', accountType);
+                    }
+                    // If still not found, check localStorage as final fallback
+                    if (!accountType) {
+                        const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+                        accountType = existingUser.accountType;
+                        console.log('Account type from localStorage:', accountType);
+                    }
+                    const userData = { email: data.email };
+                    if (accountType) {
+                        userData.accountType = accountType;
                         localStorage.setItem('user', JSON.stringify(userData));
-                        localStorage.setItem('isNewUser', 'true'); // Mark as new user
-                        showAccountTypeModal();
+                        localStorage.removeItem('isNewUser'); // Remove new user flag
+                        console.log('Redirecting to dashboard for account type:', accountType);
+                        // Load campaigns immediately after successful login for owners
+                        if (accountType === 'owner') {
+                            // Small delay to ensure the page loads before calling the campaigns API
+                            setTimeout(() => {
+                                loadCampaignsAfterLogin(data.email);
+                            }, 500);
+                        }
+                        redirectBasedOnAccountType(accountType);
                     }
                     else {
-                        alert(data.message || 'Signup failed');
+                        // If still no account type, user needs to select one
+                        console.log('No account type found, showing account type modal');
+                        localStorage.setItem('user', JSON.stringify(userData));
+                        localStorage.setItem('isNewUser', 'true'); // Mark as needing account type
+                        showAccountTypeModal();
                     }
                 }
                 else {
-                    // For login, check if we got user data back (successful login)
-                    if (response.ok && data.username && data.email) {
-                        console.log('Login successful, server response:', data);
-                        // Try to get account type from loadaccounttype endpoint
-                        let accountType = null;
-                        try {
-                            const accountTypeResponse = yield fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadaccounttype', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ username: data.email })
-                            });
-                            if (accountTypeResponse.ok) {
-                                const accountTypeData = yield accountTypeResponse.json();
-                                accountType = accountTypeData.accountType;
-                                console.log('Account type loaded from database:', accountType);
-                            }
-                            else {
-                                console.log('No account type found in database');
-                            }
-                        }
-                        catch (error) {
-                            console.error('Error loading account type:', error);
-                        }
-                        // If not found in database, check stored account types by email as fallback
-                        if (!accountType) {
-                            const accountTypes = JSON.parse(localStorage.getItem('userAccountTypes') || '{}');
-                            accountType = accountTypes[data.email];
-                            console.log('Account type from stored mapping:', accountType);
-                        }
-                        // If still not found, check localStorage as final fallback
-                        if (!accountType) {
-                            const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
-                            accountType = existingUser.accountType;
-                            console.log('Account type from localStorage:', accountType);
-                        }
-                        const userData = { email: data.email };
-                        if (accountType) {
-                            userData.accountType = accountType;
-                            localStorage.setItem('user', JSON.stringify(userData));
-                            localStorage.removeItem('isNewUser'); // Remove new user flag
-                            console.log('Redirecting to dashboard for account type:', accountType);
-                            // Load campaigns immediately after successful login for owners
-                            if (accountType === 'owner') {
-                                // Small delay to ensure the page loads before calling the campaigns API
-                                setTimeout(() => {
-                                    loadCampaignsAfterLogin(data.email);
-                                }, 500);
-                            }
-                            redirectBasedOnAccountType(accountType);
-                        }
-                        else {
-                            // If still no account type, user needs to select one
-                            console.log('No account type found, showing account type modal');
-                            localStorage.setItem('user', JSON.stringify(userData));
-                            localStorage.setItem('isNewUser', 'true'); // Mark as needing account type
-                            showAccountTypeModal();
-                        }
-                    }
-                    else {
-                        console.log('Login failed, server response:', data);
-                        alert(data.message || 'Login failed');
-                    }
+                    console.log('Login failed, server response:', data);
+                    alert(data.message || 'Login failed');
                 }
             }
-            catch (error) {
-                console.error('Auth error:', error);
-                alert('Connection error. Please try again.');
-            }
-        });
+        }
+        catch (error) {
+            console.error('Auth error:', error);
+            alert('Connection error. Please try again.');
+        }
     }
     if (signupForm) {
         signupForm.addEventListener('submit', (e) => {
@@ -437,33 +418,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     // Load campaigns data
-    function loadCampaigns() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.email)
-                return [];
-            try {
-                const response = yield fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadcampaigns', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user.email })
-                });
-                const data = yield response.json();
-                if (response.ok && data.statusCode === 200) {
-                    return JSON.parse(data.body);
-                }
-                else if (Array.isArray(data)) {
-                    return data;
-                }
-                else {
-                    return [];
-                }
+    async function loadCampaigns() {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.email)
+            return [];
+        try {
+            const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadcampaigns', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user.email })
+            });
+            const data = await response.json();
+            if (response.ok && data.statusCode === 200) {
+                return JSON.parse(data.body);
             }
-            catch (error) {
-                console.error('Error loading campaigns:', error);
+            else if (Array.isArray(data)) {
+                return data;
+            }
+            else {
                 return [];
             }
-        });
+        }
+        catch (error) {
+            console.error('Error loading campaigns:', error);
+            return [];
+        }
     }
     // Get owned campaigns for current user
     function getOwnedCampaigns(campaigns, userEmail) {
@@ -572,26 +551,25 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
     // Initialize campaigns page
-    function initCampaigns() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.email) {
-                console.log('No user email found, cannot load campaigns');
-                return;
+    async function initCampaigns() {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.email) {
+            console.log('No user email found, cannot load campaigns');
+            return;
+        }
+        console.log('Loading campaigns for user:', user.email);
+        console.log('User object:', user);
+        const campaigns = await loadCampaigns();
+        console.log('All campaigns loaded:', campaigns);
+        const ownedCampaigns = getOwnedCampaigns(campaigns, user.email);
+        console.log('Owned campaigns for', user.email, ':', ownedCampaigns);
+        const ownedGrid = document.getElementById('ownedCampaigns');
+        if (ownedGrid) {
+            if (ownedCampaigns.length > 0) {
+                ownedGrid.innerHTML = ownedCampaigns.map(c => renderOwnedCampaignCard(c)).join('');
             }
-            console.log('Loading campaigns for user:', user.email);
-            console.log('User object:', user);
-            const campaigns = yield loadCampaigns();
-            console.log('All campaigns loaded:', campaigns);
-            const ownedCampaigns = getOwnedCampaigns(campaigns, user.email);
-            console.log('Owned campaigns for', user.email, ':', ownedCampaigns);
-            const ownedGrid = document.getElementById('ownedCampaigns');
-            if (ownedGrid) {
-                if (ownedCampaigns.length > 0) {
-                    ownedGrid.innerHTML = ownedCampaigns.map(c => renderOwnedCampaignCard(c)).join('');
-                }
-                else {
-                    ownedGrid.innerHTML = `
+            else {
+                ownedGrid.innerHTML = `
                     <div style="text-align: center; color: var(--text-light); padding: 3rem;">
                         <h3>No campaigns yet</h3>
                         <p>Create your first referral campaign to start growing your business!</p>
@@ -600,9 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </button>
                     </div>
                 `;
-                }
             }
-        });
+        }
     }
     // Handle create campaign modal
     if (createCampaignBtn && createCampaignModal) {
@@ -626,7 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Handle create campaign form
     if (createCampaignForm) {
-        createCampaignForm.addEventListener('submit', (e) => __awaiter(void 0, void 0, void 0, function* () {
+        createCampaignForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             if (!user.email)
@@ -655,18 +632,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 endDate
             };
             try {
-                const response = yield fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/storecampaigns', {
+                const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/storecampaigns', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user.email, campaign: newCampaign })
                 });
-                const data = yield response.json();
+                const data = await response.json();
                 if (response.ok && data.statusCode === 200) {
                     if (createCampaignModal) {
                         createCampaignModal.classList.remove('active');
                     }
                     createCampaignForm.reset();
-                    yield initCampaigns();
+                    await initCampaigns();
                 }
                 else {
                     alert(data.message || 'Failed to create campaign');
@@ -676,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error creating campaign:', error);
                 alert('Connection error. Please try again.');
             }
-        }));
+        });
     }
     // Initialize campaigns if on campaigns page
     if (window.location.pathname.includes('campaigns.html')) {
@@ -724,97 +701,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 // Load campaigns immediately after login for owners
-function loadCampaignsAfterLogin(userEmail) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const response = yield fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadcampaigns', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: userEmail })
-            });
-            const data = yield response.json();
-            let campaigns = [];
-            if (response.ok && data.statusCode === 200) {
-                campaigns = JSON.parse(data.body);
-            }
-            else if (Array.isArray(data)) {
-                campaigns = data;
-            }
-            // Filter campaigns owned by this user
-            const ownedCampaigns = campaigns.filter((c) => c.owner === userEmail);
-            // Update stats based on actual campaigns
-            const totalCampaigns = ownedCampaigns.length;
-            const totalReferrals = ownedCampaigns.reduce((sum, campaign) => {
-                return sum + (campaign.referrals ? campaign.referrals.reduce((refSum, ref) => refSum + ref.referees.length, 0) : 0);
-            }, 0);
-            // Store updated stats for immediate display on dashboard
-            const stats = {
-                totalCampaigns,
-                totalReferrals,
-                totalRevenue: totalReferrals * 10 // Assuming $10 per referral for now
-            };
-            localStorage.setItem('ownerStats', JSON.stringify(stats));
-            console.log('Campaigns loaded after login:', { totalCampaigns, totalReferrals });
+async function loadCampaignsAfterLogin(userEmail) {
+    try {
+        const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadcampaigns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: userEmail })
+        });
+        const data = await response.json();
+        let campaigns = [];
+        if (response.ok && data.statusCode === 200) {
+            campaigns = JSON.parse(data.body);
         }
-        catch (error) {
-            console.error('Error loading campaigns after login:', error);
+        else if (Array.isArray(data)) {
+            campaigns = data;
         }
-    });
-}
-// Load all active campaigns for affiliates
-function loadAllActiveCampaigns() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const response = yield fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadallcampaigns', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}) // No specific user needed, we want all campaigns
-            });
-            let campaigns = [];
-            const data = yield response.json();
-            if (response.ok && data.statusCode === 200) {
-                campaigns = JSON.parse(data.body);
-            }
-            else if (Array.isArray(data)) {
-                campaigns = data;
-            }
-            console.log('All active campaigns loaded:', campaigns);
-            return campaigns;
-        }
-        catch (error) {
-            console.error('Error loading all campaigns:', error);
-            return [];
-        }
-    });
-}
-// Function to join a campaign (for affiliates)
-function joinCampaign(campaignId, campaignName) {
-    var _a, _b;
-    // Add user to campaign
-    const joinedCampaigns = JSON.parse(localStorage.getItem('joinedCampaigns') || '[]');
-    if (!joinedCampaigns.includes(campaignId)) {
-        joinedCampaigns.push(campaignId);
-        localStorage.setItem('joinedCampaigns', JSON.stringify(joinedCampaigns));
-        // Update stats
-        const stats = JSON.parse(localStorage.getItem('referrerStats') || '{}');
-        stats.activeCampaigns = joinedCampaigns.length;
-        localStorage.setItem('referrerStats', JSON.stringify(stats));
-        alert(`Successfully joined campaign: ${campaignName}`);
-        // Reload dashboard data if on referrer dashboard
-        if (window.location.pathname.includes('referrer-dashboard.html')) {
-            (_b = (_a = window).loadDashboardData) === null || _b === void 0 ? void 0 : _b.call(_a);
-        }
+        // Filter campaigns owned by this user
+        const ownedCampaigns = campaigns.filter((c) => c.owner === userEmail);
+        // Update stats based on actual campaigns
+        const totalCampaigns = ownedCampaigns.length;
+        const totalReferrals = ownedCampaigns.reduce((sum, campaign) => {
+            return sum + (campaign.referrals ? campaign.referrals.reduce((refSum, ref) => refSum + ref.referees.length, 0) : 0);
+        }, 0);
+        // Store updated stats for immediate display on dashboard
+        const stats = {
+            totalCampaigns,
+            totalReferrals,
+            totalRevenue: totalReferrals * 10 // Assuming $10 per referral for now
+        };
+        localStorage.setItem('ownerStats', JSON.stringify(stats));
+        console.log('Campaigns loaded after login:', { totalCampaigns, totalReferrals });
     }
-    else {
-        alert('You are already part of this campaign!');
+    catch (error) {
+        console.error('Error loading campaigns after login:', error);
     }
 }
-// Function to view campaign details
-function viewCampaignDetails(campaignId) {
-    // For now, just show an alert - in a real app this would open a detailed modal or navigate to a details page
-    alert(`Campaign details for ID: ${campaignId}\n\nThis feature will show detailed campaign information, terms, and conditions.`);
-}
-// Make functions available globally for HTML onclick handlers
-window.joinCampaign = joinCampaign;
-window.viewCampaignDetails = viewCampaignDetails;
-window.loadAllActiveCampaigns = loadAllActiveCampaigns;

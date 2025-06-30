@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Dashboard - RefBoost</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-logo">RefBoost</div>
+            <div class="nav-links">
+                <a href="referrer-dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="#my-campaigns" class="nav-link">My Campaigns</a>
+                <a href="#campaigns" class="nav-link">Available Campaigns</a>
+                <a href="#earnings" class="nav-link">Earnings</a>
+                <a href="#withdraw" class="nav-link">Withdraw</a>
+                <a href="#profile" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Welcome to Your Affiliate Dashboard</h1>
+                <p>Track your earnings and manage your referral activities</p>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalEarnings">$0</div>
+                    <div class="stat-label">Total Earnings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalReferrals">0</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeCampaigns">0</div>
+                    <div class="stat-label">Active Campaigns</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <div class="container">
+            <h2>Quick Actions</h2>
+            <div class="actions-grid">
+                <div class="action-card">
+                    <div class="action-icon">🔍</div>
+                    <h3>Browse Campaigns</h3>
+                    <p>All active campaigns are shown below - scroll down to explore and join!</p>
+                    <button class="btn btn-primary" onclick="document.querySelector('.campaigns-preview').scrollIntoView({behavior: 'smooth'})">View Campaigns</button>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">📊</div>
+                    <h3>View Analytics</h3>
+                    <p>Track your performance and earnings</p>
+                    <a href="#analytics" class="btn btn-secondary">View Analytics</a>
+                </div>
+                <div class="action-card">
+                    <div class="action-icon">💰</div>
+                    <h3>Withdraw Earnings</h3>
+                    <p>Cash out your earned rewards</p>
+                    <button class="btn btn-primary" onclick="showWithdrawModal()">Withdraw</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="recent-activity">
+        <div class="container">
+            <h2>Recent Activity</h2>
+            <div id="activityFeed" class="activity-feed">
+                <!-- Activity items will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- My Campaigns Section -->
+    <section id="my-campaigns" class="my-campaigns">
+        <div class="container">
+            <div class="section-header">
+                <h2>My Campaigns</h2>
+                <p>Campaigns you've joined and your referral links</p>
+            </div>
+            <div id="myCampaigns" class="campaigns-grid">
+                <!-- Joined campaigns will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Available Campaigns Preview -->
+    <section id="campaigns" class="campaigns-preview">
+        <div class="container">
+            <div class="section-header">
+                <h2>Available Campaigns</h2>
+            </div>
+            <div id="recommendedCampaigns" class="campaigns-grid">
+                <!-- Available campaigns will be loaded here -->
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="#" class="btn btn-secondary" onclick="loadAllActiveCampaigns(); return false;">Refresh Campaigns</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Withdraw Earnings</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="withdrawForm" class="withdraw-form">
+                <div class="form-group">
+                    <label for="withdraw-amount">Amount to Withdraw</label>
+                    <input type="number" id="withdraw-amount" name="amount" min="1" step="0.01" required>
+                    <small>Available balance: <span id="availableBalance">$0</span></small>
+                </div>
+                <div class="form-group">
+                    <label for="withdraw-method">Payment Method</label>
+                    <select id="withdraw-method" name="method" required>
+                        <option value="">Select payment method</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="bank">Bank Transfer</option>
+                        <option value="crypto">Cryptocurrency</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="withdraw-email">Payment Email/Address</label>
+                    <input type="text" id="withdraw-email" name="paymentInfo" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Process Withdrawal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>RefBoost</h3>
+                    <p>Supercharge your referral program with our easy-to-integrate solution.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#docs">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#security">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 RefBoost. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="social-icon">𝕏</i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="social-icon">in</i></a>
+                    <a href="#" aria-label="GitHub"><i class="social-icon">gh</i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="dist/app.js"></script>
+    <script>
+        // Initialize referrer dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.email) {
+                window.location.href = 'signup.html';
+                return;
+            }
+            
+            // Clear any corrupted data on page load
+            clearCorruptedData();
+            
+            // Load dashboard data directly - account type is handled by main auth flow
+            loadDashboardData();
+        });
+
+        function clearCorruptedData() {
+            try {
+                // Check and clean joinedCampaigns
+                const joinedCampaigns = JSON.parse(localStorage.getItem('joinedCampaigns') || '[]');
+                const validCampaigns = joinedCampaigns.filter(campaign => 
+                    campaign && 
+                    campaign.campaignName && 
+                    campaign.referralCode && 
+                    campaign.referralLink && 
+                    campaign.joinedDate
+                );
+                
+                if (validCampaigns.length !== joinedCampaigns.length) {
+                    localStorage.setItem('joinedCampaigns', JSON.stringify(validCampaigns));
+                    console.log('Cleaned corrupted campaign data');
+                }
+                
+                // Update stats to match valid campaigns
+                const stats = JSON.parse(localStorage.getItem('referrerStats') || '{}');
+                stats.activeCampaigns = validCampaigns.length;
+                localStorage.setItem('referrerStats', JSON.stringify(stats));
+                
+            } catch (error) {
+                console.error('Error cleaning corrupted data:', error);
+                // Reset to clean state if parsing fails
+                localStorage.setItem('joinedCampaigns', JSON.stringify([]));
+                localStorage.setItem('referrerStats', JSON.stringify({
+                    totalEarnings: 0,
+                    totalReferrals: 0,
+                    activeCampaigns: 0
+                }));
+            }
+        }
+
+        function loadDashboardData() {
+            // Load user stats
+            const stats = JSON.parse(localStorage.getItem('referrerStats') || JSON.stringify({
+                totalEarnings: 0,
+                totalReferrals: 0,
+                activeCampaigns: 0
+            }));
+
+            document.getElementById('totalEarnings').textContent = `$${stats.totalEarnings}`;
+            document.getElementById('totalReferrals').textContent = stats.totalReferrals;
+            document.getElementById('activeCampaigns').textContent = stats.activeCampaigns;
+            document.getElementById('availableBalance').textContent = `$${stats.totalEarnings}`;
+
+            // Load activity feed
+            loadActivityFeed();
+            
+            // Load joined campaigns
+            loadMyCampaigns();
+            
+            // Load recommended campaigns
+            loadRecommendedCampaigns();
+        }
+
+        function loadActivityFeed() {
+            const activities = JSON.parse(localStorage.getItem('referrerActivities') || JSON.stringify([
+                {
+                    type: 'referral',
+                    message: 'You earned $10 for referring John Doe',
+                    date: new Date().toISOString(),
+                    amount: 10
+                },
+                {
+                    type: 'campaign_joined',
+                    message: 'You joined the "Summer Sale" campaign',
+                    date: new Date(Date.now() - 86400000).toISOString(),
+                    campaign: 'Summer Sale'
+                }
+            ]));
+
+            const activityFeed = document.getElementById('activityFeed');
+            if (activityFeed) {
+                activityFeed.innerHTML = activities.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-icon">${activity.type === 'referral' ? '💰' : '🎯'}</div>
+                        <div class="activity-content">
+                            <p>${activity.message}</p>
+                            <small>${new Date(activity.date).toLocaleDateString()}</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadMyCampaigns() {
+            const joinedCampaigns = JSON.parse(localStorage.getItem('joinedCampaigns') || '[]');
+            const myCampaignsGrid = document.getElementById('myCampaigns');
+            
+            if (myCampaignsGrid) {
+                // Filter out any invalid campaigns (missing required fields)
+                const validCampaigns = joinedCampaigns.filter(campaign => 
+                    campaign && 
+                    campaign.campaignName && 
+                    campaign.referralCode && 
+                    campaign.referralLink && 
+                    campaign.joinedDate
+                );
+
+                if (validCampaigns.length > 0) {
+                    myCampaignsGrid.innerHTML = validCampaigns.map(campaign => `
+                        <div class="campaign-card">
+                            <div class="campaign-header">
+                                <h3>${campaign.campaignName}</h3>
+                                <div class="campaign-status">Joined</div>
+                            </div>
+                            <div class="campaign-details">
+                                <div class="campaign-info">
+                                    <strong>Referral Code:</strong> ${campaign.referralCode}
+                                </div>
+                                <div class="campaign-info">
+                                    <strong>Joined:</strong> ${new Date(campaign.joinedDate).toLocaleDateString()}
+                                </div>
+                            </div>
+                            <div class="referral-link-section">
+                                <label>Your Referral Link:</label>
+                                <div class="referral-link-container">
+                                    <input type="text" value="${campaign.referralLink}" readonly class="referral-link-input">
+                                    <button class="btn btn-secondary" onclick="copyReferralLink('${campaign.referralLink}')">Copy</button>
+                                </div>
+                            </div>
+                            <div class="campaign-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Clicks:</span>
+                                    <span class="stat-value" id="clicks-${campaign.referralCode}">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Conversions:</span>
+                                    <span class="stat-value" id="conversions-${campaign.referralCode}">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Update localStorage with only valid campaigns
+                    if (validCampaigns.length !== joinedCampaigns.length) {
+                        localStorage.setItem('joinedCampaigns', JSON.stringify(validCampaigns));
+                    }
+                    
+                    // Load tracking stats for each campaign
+                    loadTrackingStats();
+                } else {
+                    // Clear any corrupted data
+                    localStorage.setItem('joinedCampaigns', JSON.stringify([]));
+                    
+                    myCampaignsGrid.innerHTML = `
+                        <div style="text-align: center; color: var(--text-light); padding: 3rem; grid-column: 1 / -1;">
+                            <h3>No Campaigns Joined Yet</h3>
+                            <p>Browse available campaigns below and join some to start earning!</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        async function loadTrackingStats() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.email) return;
+
+            try {
+                const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadcodes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.email })
+                });
+
+                let codes = [];
+                const data = await response.json();
+                
+                if (response.ok && data.statusCode === 200) {
+                    codes = JSON.parse(data.body);
+                } else if (Array.isArray(data)) {
+                    codes = data;
+                }
+
+                // Update stats for each campaign
+                codes.forEach(code => {
+                    const clicksElement = document.getElementById(`clicks-${code.code}`);
+                    const conversionsElement = document.getElementById(`conversions-${code.code}`);
+                    
+                    if (clicksElement) clicksElement.textContent = code.clicks || 0;
+                    if (conversionsElement) conversionsElement.textContent = code.conversions || 0;
+                });
+
+            } catch (error) {
+                console.error('Error loading tracking stats:', error);
+            }
+        }
+
+        function copyReferralLink(link) {
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Referral link copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = link;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Referral link copied to clipboard!');
+            });
+        }
+
+        function loadRecommendedCampaigns() {
+            // Load all active campaigns from the API for affiliates to browse
+            loadAllActiveCampaigns();
+        }
+
+        async function loadAllActiveCampaigns() {
+            try {
+                const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/loadallcampaigns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}) // No specific user needed, we want all campaigns
+                });
+                
+                let campaigns = [];
+                const data = await response.json();
+                
+                if (response.ok && data.statusCode === 200) {
+                    campaigns = JSON.parse(data.body);
+                } else if (Array.isArray(data)) {
+                    campaigns = data;
+                }
+                
+                // Filter out expired campaigns by comparing with current date
+                const currentDate = new Date();
+                const activeCampaigns = campaigns.filter(campaign => {
+                    // Check if campaign status is active
+                    if (campaign.status !== 'active') return false;
+                    
+                    // Check if campaign has an end date and if it's still valid
+                    if (campaign.endDate) {
+                        const endDate = new Date(campaign.endDate);
+                        // Only include campaigns that haven't expired
+                        return endDate > currentDate;
+                    }
+                    
+                    // If no end date is specified, consider it active
+                    return true;
+                });
+                
+                console.log('All active campaigns loaded:', activeCampaigns);
+                console.log('Filtered out expired campaigns. Total active:', activeCampaigns.length);
+                
+                const campaignsGrid = document.getElementById('recommendedCampaigns');
+                if (campaignsGrid) {
+                    if (activeCampaigns.length > 0) {
+                        campaignsGrid.innerHTML = activeCampaigns.slice(0, 6).map(campaign => `
+                            <div class="campaign-card">
+                                <div class="campaign-header">
+                                    <h3>${campaign.name}</h3>
+                                    <div class="campaign-owner">by ${campaign.owner}</div>
+                                </div>
+                                <p>${campaign.description}</p>
+                                <div class="campaign-details">
+                                    <div class="campaign-reward">💰 ${campaign.rewardType === 'percentage' ? campaign.rewardValue + '%' : '$' + campaign.rewardValue} per referral</div>
+                                    <div class="campaign-category">📂 ${campaign.category || 'General'}</div>
+                                    ${campaign.endDate ? `<div class="campaign-end-date">⏰ Ends: ${new Date(campaign.endDate).toLocaleDateString()}</div>` : ''}
+                                </div>
+                                <div class="campaign-actions">
+                                    <button class="btn btn-primary" onclick="joinCampaign('${campaign.id}', '${campaign.name}')">Join Campaign</button>
+                                    <button class="btn btn-secondary" onclick="viewCampaignDetails('${campaign.id}')">View Details</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        campaignsGrid.innerHTML = `
+                            <div style="text-align: center; color: var(--text-light); padding: 3rem; grid-column: 1 / -1;">
+                                <h3>No Active Campaigns</h3>
+                                <p>There are currently no active campaigns available to join. Check back later!</p>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Return the filtered active campaigns array for use by other functions
+                return activeCampaigns;
+                
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                const campaignsGrid = document.getElementById('recommendedCampaigns');
+                if (campaignsGrid) {
+                    campaignsGrid.innerHTML = `
+                        <div style="text-align: center; color: var(--text-light); padding: 3rem; grid-column: 1 / -1;">
+                            <h3>Error Loading Campaigns</h3>
+                            <p>Unable to load campaigns at this time. Please try again later.</p>
+                        </div>
+                    `;
+                }
+                
+                // Return empty array on error
+                return [];
+            }
+        }
+
+        // Make the function globally available
+        window.loadAllActiveCampaigns = loadAllActiveCampaigns;
+
+        function showWithdrawModal() {
+            const modal = document.getElementById('withdrawModal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        async function joinCampaign(campaignId, campaignName) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.email) {
+                alert('Please log in to join campaigns');
+                return;
+            }
+
+            // Check if already joined
+            const joinedCampaigns = JSON.parse(localStorage.getItem('joinedCampaigns') || '[]');
+            if (joinedCampaigns.find(c => c.campaignId === campaignId)) {
+                alert('You are already part of this campaign!');
+                return;
+            }
+
+            try {
+                // Generate unique referral code
+                const referralCode = generateReferralCode();
+                
+                // Get the original campaign link from all campaigns
+                let allCampaigns = [];
+                try {
+                    allCampaigns = await loadAllActiveCampaigns();
+                    // Ensure we have an array
+                    if (!Array.isArray(allCampaigns)) {
+                        allCampaigns = [];
+                    }
+                } catch (error) {
+                    console.error('Error loading campaigns:', error);
+                    allCampaigns = [];
+                }
+                
+                const campaign = allCampaigns.find(c => c.id === campaignId);
+                
+                if (!campaign) {
+                    alert('Campaign not found. Please refresh the page and try again.');
+                    return;
+                }
+
+                // Create referral data
+                const referralData = {
+                    code: referralCode,
+                    campaignId: campaignId,
+                    campaignName: campaignName,
+                    originalLink: campaign.referralLink,
+                    affiliate: user.email,
+                    clicks: 0,
+                    conversions: 0,
+                    created: new Date().toISOString()
+                };
+
+                // Store the referral code using storecodes API
+                const response = await fetch('https://k32b4ntjrd.execute-api.us-west-2.amazonaws.com/storecodes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: user.email, 
+                        code: referralData 
+                    })
+                });
+
+                if (response.ok) {
+                    // Update local storage
+                    const updatedJoinedCampaigns = [...joinedCampaigns, {
+                        campaignId: campaignId,
+                        campaignName: campaignName,
+                        referralCode: referralCode,
+                        referralLink: `${window.location.origin}/track.html?code=${referralCode}`,
+                        joinedDate: new Date().toISOString()
+                    }];
+                    localStorage.setItem('joinedCampaigns', JSON.stringify(updatedJoinedCampaigns));
+                    
+                    // Update stats
+                    const stats = JSON.parse(localStorage.getItem('referrerStats') || '{}');
+                    stats.activeCampaigns = updatedJoinedCampaigns.length;
+                    localStorage.setItem('referrerStats', JSON.stringify(stats));
+                    
+                    // Show success message with referral link
+                    const referralLink = `${window.location.origin}/track.html?code=${referralCode}`;
+                    alert(`Successfully joined campaign: ${campaignName}\n\nYour referral link: ${referralLink}\n\nShare this link to earn rewards!`);
+                    
+                    loadDashboardData();
+                } else {
+                    const errorData = await response.json();
+                    alert('Failed to join campaign: ' + (errorData.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error joining campaign:', error);
+                alert('Error joining campaign. Please try again.');
+            }
+        }
+
+        function generateReferralCode() {
+            // Generate a unique 8-character alphanumeric code
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function viewCampaignDetails(campaignId) {
+            // For now, just show an alert - in a real app this would open a detailed modal or navigate to a details page
+            alert(`Campaign details for ID: ${campaignId}\n\nThis feature will show detailed campaign information, terms, and conditions.`);
+        }
+
+        // Handle withdraw modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const withdrawModal = document.getElementById('withdrawModal');
+            const closeModal = withdrawModal?.querySelector('.close-modal');
+            const withdrawForm = document.getElementById('withdrawForm');
+
+            if (closeModal && withdrawModal) {
+                closeModal.addEventListener('click', () => {
+                    withdrawModal.classList.remove('active');
+                });
+            }
+
+            if (withdrawModal) {
+                withdrawModal.addEventListener('click', (e) => {
+                    if (e.target === withdrawModal) {
+                        withdrawModal.classList.remove('active');
+                    }
+                });
+            }
+
+            if (withdrawForm) {
+                withdrawForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(withdrawForm);
+                    const amount = parseFloat(formData.get('amount'));
+                    
+                    // Process withdrawal (in real app, this would call an API)
+                    alert(`Withdrawal request for $${amount} submitted successfully!`);
+                    if (withdrawModal) {
+                        withdrawModal.classList.remove('active');
+                    }
+                    withdrawForm.reset();
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

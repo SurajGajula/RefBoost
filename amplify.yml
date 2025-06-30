@@ -1,0 +1,30 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install
+    build:
+      commands:
+        - echo "Compiling TypeScript..."
+        - npx tsc
+        - echo "Copying compiled JavaScript..."
+        - cp src/dist/app.js .
+        - echo "Build complete"
+  artifacts:
+    baseDirectory: .
+    files:
+      - '*.html'
+      - '*.css'
+      - '*.js'
+      - '_redirects'
+    excludePaths:
+      - node_modules/**/*
+      - src/**/*
+      - lambda/**/*
+      - .git/**/*
+      - tsconfig.json
+      - package*.json
+  cache:
+    paths:
+      - node_modules/**/* 
