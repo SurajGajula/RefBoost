@@ -166,19 +166,36 @@
                 console.log('Redirecting to:', originalLink);
                 
                 if (originalLink) {
+                    // Store referral tracking data in sessionStorage for conversion tracking
+                    const trackingData = {
+                        referralCode: referralCode,
+                        campaignId: referralData.campaignId,
+                        affiliate: referralData.affiliate,
+                        clickTime: new Date().toISOString()
+                    };
+                    sessionStorage.setItem('refboost_tracking', JSON.stringify(trackingData));
+                    
+                    // Add conversion tracking parameters to the original link
+                    const url = new URL(originalLink);
+                    url.searchParams.set('refboost_code', referralCode);
+                    url.searchParams.set('refboost_track', 'true');
+                    const trackedLink = url.toString();
+                    
+                    console.log('Redirecting to tracked link:', trackedLink);
+                    
                     // Add a small delay to ensure tracking is processed
                     setTimeout(() => {
-                        window.location.href = originalLink;
+                        window.location.href = trackedLink;
                     }, 1000);
                     
                     // Show manual link as backup
                     setTimeout(() => {
                         const manualLink = document.getElementById('manualLink');
                         if (manualLink) {
-                            manualLink.href = originalLink;
+                            manualLink.href = trackedLink;
                             manualLink.style.display = 'inline-block';
                             document.querySelector('.tracking-details').innerHTML = 
-                                `If you're not redirected automatically, <a href="${originalLink}" style="color: var(--primary-color);">click here</a>.`;
+                                `If you're not redirected automatically, <a href="${trackedLink}" style="color: var(--primary-color);">click here</a>.`;
                         }
                     }, 2000);
                 } else {
