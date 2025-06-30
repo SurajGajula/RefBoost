@@ -1,9 +1,2 @@
-# Static files should be served directly
-/styles.css   /styles.css   200
-/app.js      /app.js       200
-*.html       /              200
-*.css        /              200
-*.js         /              200
-
-# Handle SPA routing - only redirect if file doesn't exist
+# Handle SPA routing - redirect non-existent routes to index.html
 /*    /index.html   404 
