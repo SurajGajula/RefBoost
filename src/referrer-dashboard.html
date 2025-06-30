@@ -572,7 +572,7 @@
                         campaignId: campaignId,
                         campaignName: campaignName,
                         referralCode: referralCode,
-                        referralLink: `https://main.d1eqx63dq7bfqg.amplifyapp.com/track.html?code=${referralCode}`,
+                        referralLink: `https://main.djpzpkogjgu28.amplifyapp.com/track.html?code=${referralCode}`,
                         joinedDate: new Date().toISOString()
                     }];
                     localStorage.setItem('joinedCampaigns', JSON.stringify(updatedJoinedCampaigns));
@@ -583,7 +583,7 @@
                     localStorage.setItem('referrerStats', JSON.stringify(stats));
                     
                     // Show success message with referral link
-                    const referralLink = `https://main.d1eqx63dq7bfqg.amplifyapp.com/track.html?code=${referralCode}`;
+                    const referralLink = `https://main.djpzpkogjgu28.amplifyapp.com/track.html?code=${referralCode}`;
                     alert(`Successfully joined campaign: ${campaignName}\n\nYour referral link: ${referralLink}\n\nShare this link to earn rewards!`);
                     
                     loadDashboardData();
