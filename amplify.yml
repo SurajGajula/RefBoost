@@ -9,7 +9,7 @@ frontend:
         - echo "Compiling TypeScript..."
         - npx tsc
         - echo "Copying compiled JavaScript..."
-        - cp src/dist/app.js .
+        - cp dist/app.js .
         - echo "Build complete"
   artifacts:
     baseDirectory: .
@@ -23,6 +23,7 @@ frontend:
       - src/**/*
       - lambda/**/*
       - .git/**/*
+      - dist/**/*
       - tsconfig.json
       - package*.json
   cache:
